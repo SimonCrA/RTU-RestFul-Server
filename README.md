@@ -36,3 +36,9 @@ npm start
 ```
 
 El servidor iniciará en el puerto 3000.
+
+### Documentacion de APIs
+
+url de la documentación en postman
+
+https://documenter.getpostman.com/view/8334104/TzRNGAPJ
