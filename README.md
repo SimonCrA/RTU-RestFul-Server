@@ -14,6 +14,10 @@ CRUD de usuario, y conexión con la base de datos NoSQL **MongoDB** usando Mongo
 * bcrypt _5.0.0_
 * @hapi-joi _17.1.1_
 
+## Arquitectura
+---------------
+<img src="/assets/img/Server_Design.png" />
+
 ## Configurando el proyecto
 ---------------
 
