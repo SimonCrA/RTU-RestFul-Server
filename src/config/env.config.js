@@ -17,7 +17,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 //Token expiration time
 //=====================
 
-process.env.TOKEN_EXPIRY = 30000;
+process.env.TOKEN_EXPIRY = 120000;
 
 
 //=====================
