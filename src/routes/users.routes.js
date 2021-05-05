@@ -18,7 +18,7 @@ exports.routesConfig = (app) => {
   app.delete('/api/users/:userId',[
     AuthorizationMiddleware.verifyValidJWT
   ], UsersController.disableById)
-  app.delete('/api/users/:userId',[
+  app.delete('/api/users/delete/:userId',[
     AuthorizationMiddleware.verifyValidJWT
   ], UsersController.removeById)
   
