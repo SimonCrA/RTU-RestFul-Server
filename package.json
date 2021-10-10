@@ -4,7 +4,8 @@
   "description": "A ready to Use repo to build a restful Server using Express.js",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.js"
+    "start": "nodemon src/index.js",
+    "test": "mocha src --timeout 10000"
   },
   "author": "csimonr28@gmail.com",
   "license": "ISC",
@@ -19,6 +20,9 @@
     "mongoose-unique-validator": "^2.0.3"
   },
   "devDependencies": {
+    "chai": "^4.3.4",
+    "chai-http": "^4.3.0",
+    "mocha": "^9.1.2",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.6"
   }
