@@ -7,7 +7,7 @@ CRUD de usuario, y conexión con la base de datos NoSQL **MongoDB** usando Mongo
 
 ---
 
-<img src="https://drive.google.com/file/d/15LeqqQHMgQbYHvV8xubd3xTmRdc2bNoI/view?usp=sharing" />
+![architecture]("https://drive.google.com/file/d/15LeqqQHMgQbYHvV8xubd3xTmRdc2bNoI/view?usp=sharing")
 
 ## Configurando el proyecto
 
