@@ -1,149 +1,197 @@
-const User = require('../models/users.model')
-const bcrypt = require('bcrypt')
+'use-strict'
 
-exports.insert = async (req, res) => {
-  
+const bcrypt = require('bcrypt')
+const { createNewUserService, listUsersService, getUserByIdService, updateUserService } = require('../services/users.service')
+const { validationResult } = require('express-validator')
+
+exports.createNewUserController = async (req, res) => {
   try {
+    //Validations
+    const validationErrors = validationResult(req)
+    if (!validationErrors.isEmpty()) {
+      return res.status(400).json({
+        ok: false,
+        err: validationErrors.array()
+      })
+    }
+    const { password } = req.body
+
     //hash Password
-    const hashedPassword = await bcrypt.hashSync(req.body.password, 10)
+    const hashedPassword = await bcrypt.hashSync(password, 10)
     req.body.password = hashedPassword
 
-    const user = new User(req.body)
-    const userSaved = await user.save()
+    const userCreated = await createNewUserService(req.body).catch((_error) => {
+      throw _error
+    })
     res.status(201).json({
       ok: true,
-      user: {
-        id: userSaved._id
-      }
-      })
-  } catch (error) {
-    console.log(error);
+      data: {
+        id: userCreated._id
+      },
+      message: 'Usuario creado satisfactoriamente.'
+    })
+  } catch (_error) {
+    console.log(_error)
+    res.status(500).json({
+      ok: false,
+      message: 'Ha ocurrido un error grave'
+    })
   }
 }
 
-exports.list = (req, res) => {
-  let limit = req.query.limit && req.query.limit <= 100 ? parseInt(req.query.limit) : 10;
-  let page = 0;
-  if (req.query) {
-    if (req.query.page) {
-      req.query.page = parseInt(req.query.page);
-      page = Number.isInteger(req.query.page) ? req.query.page : 0;
-    }
-  }
-  User.find()
-        .limit(limit)
-        .skip(limit * page)
-        .exec( (err, usersDB) => {
-          if (err) {
-            return res.status(500).json({
-              ok: false,
-              err
-            })
-          }
-          res.status(200).json({
-            ok: true,
-            user: usersDB
-          });
-        })
-}
-
-exports.getById = (req, res) => {
-  User.findById({_id: req.params.userId}, (err, userDB) =>{
-    if (err) {
-      return res.status(500).json({
+exports.UpdateUserController = async (req, res) => {
+  try {
+    //Validations
+    const validationErrors = validationResult(req)
+    if (!validationErrors.isEmpty()) {
+      return res.status(400).json({
         ok: false,
-        err
+        err: validationErrors.array()
       })
     }
-    if (!userDB) {
+
+    const { userId } = req.params
+    const { password } = req.body
+
+    if (password) {
+      //hash Password
+      req.body.password = await bcrypt.hashSync(password, 10)
+    }
+    const USER_UPDATED = await updateUserService(userId, req.body).catch((_error) => {
+      throw _error
+    })
+    if (!USER_UPDATED) {
       return res.status(404).json({
         ok: false,
-        err: "User not found or it's already deleted"
-      });
+        data: null,
+        message: 'Usuario no encontrado.'
+      })
     }
     res.status(200).json({
       ok: true,
-      user: userDB
-    });
-  })
+      data: {
+        id: USER_UPDATED._id
+      },
+      message: 'Usuario actualizado.'
+    })
+  } catch (_error) {
+    console.log(_error)
+    res.status(500).json({
+      ok: false,
+      message: 'Ha ocurrido un error grave'
+    })
+  }
 }
 
-exports.patchById = async (req, res) => {
-    if (req.body.password) {
-      //hash Password
-      const hashedPassword = await bcrypt.hashSync(req.body.password, 10)
-      req.body.password = hashedPassword
+exports.listUsersController = async (req, res) => {
+  try {
+    //Validations
+    const validationErrors = validationResult(req)
+    if (!validationErrors.isEmpty()) {
+      return res.status(400).json({
+        ok: false,
+        err: validationErrors.array()
+      })
     }
-    User.findOneAndUpdate({_id: req.params.userId }, req.body, { useFindAndModify: false }, (err, userUpdated) => {
-      if (err) {
-        return res.status(500).json({
-          ok: false,
-          err
-        })
-      }
-      if (!userUpdated) {
-        return res.status(404).json({
-          ok: false,
-          err: 'User not found or already deleted'
-        });
-      }
-      res.status(200).json({
-        ok: true,
-        user: {
-          id: userUpdated._id
-        }
-      });
+
+    let { limit, page } = req.query
+
+    limit = limit && limit <= 100 ? parseInt(limit) : 10
+    page = page && Number.isInteger(page) ? parseInt(page) : 0
+
+    const USERS = await listUsersService().catch((_error) => {
+      throw _error
     })
 
-}
-
-exports.disableById = (req, res) => {
-  let status = {
-    status: false
+    res.status(200).json({
+      ok: true,
+      data: USERS,
+      message: 'Listado de usuarios.'
+    })
+  } catch (_error) {
+    console.log(_error)
+    res.status(500).json({
+      ok: false,
+      message: 'Ha ocurrido un error grave'
+    })
   }
-  User.findByIdAndUpdate(req.params.userId, status, (err, userDeleted) => {
-    if (err) {
-      return res.status(500).json({
-        ok: false,
-        err: 'bad Request'
-      });
-    }
-    if (!userDeleted) {
-      return res.status(404).json({
-        ok: false,
-        err: 'User not found or already deleted'
-      });
-    }
-    res.status(200).json({
-      ok: true,
-      user: {
-        id: userDeleted._id,
-        message: 'user Disabled'
-      }
-    });
-  })
 }
 
-exports.removeById = (req, res) => {
-  User.findByIdAndDelete(req.params.userId, (err, userDeleted) => {
-    if (err) {
-      return res.status(500).json({
+exports.getUserByIdController = async (req, res) => {
+  try {
+    //Validations
+    const validationErrors = validationResult(req)
+    if (!validationErrors.isEmpty()) {
+      return res.status(400).json({
         ok: false,
-        err,
-      });
+        err: validationErrors.array()
+      })
     }
-    if (!userDeleted) {
+
+    const { userId } = req.params
+    const USER = await getUserByIdService(userId).catch((_error) => {
+      throw _error
+    })
+
+    if (!USER) {
       return res.status(404).json({
         ok: false,
-        err: 'User not found or already deleted'
-      });
+        data: null,
+        message: 'Usuario no encontrado o no existe.'
+      })
     }
     res.status(200).json({
       ok: true,
-      user: {
-        id: userDeleted._id,
-        message: 'user Deleted'
-      }
-    });
-  })
+      data: USER,
+      message: 'Detalle de usuario.'
+    })
+  } catch (_error) {
+    console.log(_error)
+    res.status(500).json({
+      ok: false,
+      message: 'Ha ocurrido un error grave'
+    })
+  }
+}
+
+exports.deleteUserController = async (req, res) => {
+  try {
+    //Validations
+    const validationErrors = validationResult(req)
+    if (!validationErrors.isEmpty()) {
+      return res.status(400).json({
+        ok: false,
+        err: validationErrors.array()
+      })
+    }
+
+    const { userId } = req.params
+
+    let status = {
+      status: false
+    }
+    const USER_UPDATED = await updateUserService(userId, status).catch((_error) => {
+      throw _error
+    })
+    if (!USER_UPDATED) {
+      return res.status(404).json({
+        ok: false,
+        data: null,
+        message: 'Usuario no encontrado.'
+      })
+    }
+    res.status(200).json({
+      ok: true,
+      data: {
+        id: USER_UPDATED._id
+      },
+      message: 'Usuario eliminado.'
+    })
+  } catch (_error) {
+    console.log(_error)
+    res.status(500).json({
+      ok: false,
+      message: 'Ha ocurrido un error grave'
+    })
+  }
 }
