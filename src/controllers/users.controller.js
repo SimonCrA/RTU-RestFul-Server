@@ -34,7 +34,7 @@ exports.createNewUserController = async (req, res) => {
     console.log(_error)
     res.status(500).json({
       ok: false,
-      message: 'Ha ocurrido un error grave'
+      message: 'API is not available for now.'
     })
   }
 }
@@ -64,7 +64,7 @@ exports.UpdateUserController = async (req, res) => {
       return res.status(404).json({
         ok: false,
         data: null,
-        message: 'Usuario no encontrado.'
+        message: 'User not found.'
       })
     }
     res.status(200).json({
@@ -72,13 +72,13 @@ exports.UpdateUserController = async (req, res) => {
       data: {
         id: USER_UPDATED._id
       },
-      message: 'Usuario actualizado.'
+      message: 'User updated.'
     })
   } catch (_error) {
     console.log(_error)
     res.status(500).json({
       ok: false,
-      message: 'Ha ocurrido un error grave'
+      message: 'API is not available for now.'
     })
   }
 }
@@ -106,13 +106,13 @@ exports.listUsersController = async (req, res) => {
     res.status(200).json({
       ok: true,
       data: USERS,
-      message: 'Listado de usuarios.'
+      message: 'Users list.'
     })
   } catch (_error) {
     console.log(_error)
     res.status(500).json({
       ok: false,
-      message: 'Ha ocurrido un error grave'
+      message: 'API is not available for now.'
     })
   }
 }
@@ -137,19 +137,19 @@ exports.getUserByIdController = async (req, res) => {
       return res.status(404).json({
         ok: false,
         data: null,
-        message: 'Usuario no encontrado o no existe.'
+        message: 'User not found.'
       })
     }
     res.status(200).json({
       ok: true,
       data: USER,
-      message: 'Detalle de usuario.'
+      message: 'User detail.'
     })
   } catch (_error) {
     console.log(_error)
     res.status(500).json({
       ok: false,
-      message: 'Ha ocurrido un error grave'
+      message: 'API is not available for now.'
     })
   }
 }
@@ -177,7 +177,7 @@ exports.deleteUserController = async (req, res) => {
       return res.status(404).json({
         ok: false,
         data: null,
-        message: 'Usuario no encontrado.'
+        message: 'User not found.'
       })
     }
     res.status(200).json({
@@ -185,13 +185,13 @@ exports.deleteUserController = async (req, res) => {
       data: {
         id: USER_UPDATED._id
       },
-      message: 'Usuario eliminado.'
+      message: 'User deleted.'
     })
   } catch (_error) {
     console.log(_error)
     res.status(500).json({
       ok: false,
-      message: 'Ha ocurrido un error grave'
+      message: 'API is not available for now.'
     })
   }
 }

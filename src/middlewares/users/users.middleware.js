@@ -2,51 +2,55 @@
 
 const { body, param, query } = require('express-validator')
 
+const { getUserByIdService } = require('../../services/users.service')
+
 exports.createUserValidationMiddleware = [
   body('name')
     .notEmpty()
-    .withMessage('el nombre no debe estar vacío.')
+    .withMessage('name must not be empty.')
     .isString()
-    .withMessage('el nombre debe ser una cadena de caracteres.')
+    .withMessage('name must be a string.')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.name.trim()
     }),
   body('lastname')
     .notEmpty()
-    .withMessage('el apellido no debe estar vacío.')
+    .withMessage('lastname must not be empty.')
     .isString()
-    .withMessage('el apellido debe ser una cadena de caracteres.')
+    .withMessage('lastname must be a string.')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.lastname.trim()
     }),
   body('email')
     .notEmpty()
-    .withMessage('el correo no debe estar vacío.')
+    .withMessage('email must not be empty.')
     .isString()
-    .withMessage('el correo debe ser una cadena de caracteres.')
+    .withMessage('email must be a string.')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.email.trim()
     })
     .isEmail()
-    .withMessage('el correo debe ser un correo electronico válido.'),
+    .withMessage('email must be a vaild email address.'),
   body('password')
     .notEmpty()
-    .withMessage('La clave no debe estar vacío.')
+    .withMessage('password must not be empty.')
     .isString()
-    .withMessage('La clave debe ser una cadena de caracteres.')
+    .withMessage('password must be a string.')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.password.trim()
-    }),
+    })
+    .isAlphanumeric()
+    .withMessage('password must be alphanumeric.'),
   body('role')
     .optional()
     .notEmpty()
-    .withMessage('el rol no debe estar vacío.')
+    .withMessage('role must not be empty.')
     .isString()
-    .withMessage('el rol debe ser una cadena de caracteres.')
+    .withMessage('role must be a string.')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.role.trim()
@@ -56,15 +60,24 @@ exports.createUserValidationMiddleware = [
 exports.updateUserValidationMiddleware = [
   param('userId')
     .notEmpty()
-    .withMessage('el identificador del usuario no debe estar vacío.')
+    .withMessage('userId must not be empty.')
     .isMongoId()
-    .withMessage('el identificador debe estar en formato válido.'),
+    .withMessage('userId must be a valid string identifier.')
+    .custom(async (_value) => {
+      const USER_DB = await getUserByIdService(_value).catch((_error) => {
+        throw _error
+      })
+
+      if (!USER_DB) throw new Error('User does not exist.')
+
+      return true
+    }),
   body('name')
     .optional()
     .notEmpty()
-    .withMessage('el nombre no debe estar vacío.')
+    .withMessage('name must not be empty.')
     .isString()
-    .withMessage('el nombre debe ser una cadena de caracteres.')
+    .withMessage('name must be a string.')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.name.trim()
@@ -72,9 +85,9 @@ exports.updateUserValidationMiddleware = [
   body('lastname')
     .optional()
     .notEmpty()
-    .withMessage('el apellido no debe estar vacío.')
+    .withMessage('lastname must not be empty.')
     .isString()
-    .withMessage('el apellido debe ser una cadena de caracteres.')
+    .withMessage('lastname must be a string..')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.lastname.trim()
@@ -82,21 +95,21 @@ exports.updateUserValidationMiddleware = [
   body('email')
     .optional()
     .notEmpty()
-    .withMessage('el correo no debe estar vacío.')
+    .withMessage('email must not be empty.')
     .isString()
-    .withMessage('el correo debe ser una cadena de caracteres.')
+    .withMessage('email must be a string.')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.email.trim()
     })
     .isEmail()
-    .withMessage('el correo debe ser un correo electronico válido.'),
+    .withMessage('email must be a valida email address'),
   body('password')
     .optional()
     .notEmpty()
-    .withMessage('La clave no debe estar vacío.')
+    .withMessage('password must not be empty.')
     .isString()
-    .withMessage('La clave debe ser una cadena de caracteres.')
+    .withMessage('password must be a string.')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.password.trim()
@@ -104,9 +117,9 @@ exports.updateUserValidationMiddleware = [
   body('role')
     .optional()
     .notEmpty()
-    .withMessage('el rol no debe estar vacío.')
+    .withMessage('role must not be empty.')
     .isString()
-    .withMessage('el rol debe ser una cadena de caracteres.')
+    .withMessage('role must be a string.')
     .toLowerCase()
     .customSanitizer((_value, { req }) => {
       return req.body.role.trim()
@@ -117,21 +130,34 @@ exports.listUsersValidationMiddleware = [
   query('limit')
     .optional()
     .notEmpty()
-    .withMessage('El límite no puede estar vacío.')
+    .withMessage('limit must not be empty')
     .isLength({ min: 1, max: 2 })
-    .withMessage('La cantidad máxima de registros por consulta son 99')
+    .withMessage('maximum number of users per request should not be greater than 99')
     .isNumeric()
-    .withMessage('el límite debe ser numérico.'),
+    .withMessage('limit must be numeric.'),
   query('page')
     .optional()
     .notEmpty()
-    .withMessage('La página no puede estar vacío.')
+    .withMessage('page must not be empty.')
     .isLength({ min: 1, max: 3 })
-    .withMessage('La cantidad máxima de páginas son 999')
+    .withMessage('maximum number of users per request should not be greater than 999')
     .isNumeric()
-    .withMessage('La págia debe ser numérico.')
+    .withMessage('page must be numeric.')
 ]
 
 exports.checkIdUserValidationMiddleware = [
-  param('userId').notEmpty().withMessage('El límite no puede estar vacío.').isMongoId().withMessage('el identificador debe estar en formato válido.')
+  param('userId')
+    .notEmpty()
+    .withMessage('userId must not be empty.')
+    .isMongoId()
+    .withMessage('userId must be a valid string identifier.')
+    .custom(async (_value) => {
+      const USER_DB = await getUserByIdService(_value).catch((_error) => {
+        throw _error
+      })
+
+      if (!USER_DB) throw new Error('User does not exist.')
+
+      return true
+    })
 ]

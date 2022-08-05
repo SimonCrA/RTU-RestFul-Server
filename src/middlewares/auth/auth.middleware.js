@@ -1,6 +1,7 @@
 'use-strict'
 
 const { body, param, query } = require('express-validator')
+const { findUserByEmailService } = require('../../services/users.service')
 
 exports.logInValidationMiddleware = [
   body('email')
@@ -50,7 +51,16 @@ exports.signUpValidationMiddleware = [
       return req.body.email.trim()
     })
     .isEmail()
-    .withMessage('email must be a valid email.'),
+    .withMessage('email must be a valid email.')
+    .custom(async (_value) => {
+      const USER_DB = await findUserByEmailService(_value).catch((_error) => {
+        throw _error
+      })
+
+      if (USER_DB) throw new Error('Email already exist, please choose another one.')
+
+      return true
+    }),
   body('password')
     .notEmpty()
     .withMessage('password must not be empty.')
